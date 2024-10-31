@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disaster Help Button with Video Background</title>
+  <style>
+    /* Set the container to cover the whole screen */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Video Background */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Overlay for video background */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    /* Centered Button */
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+      flex-direction: column;
+    }
+
+    /* Button Style */
+    .help-button {
+      background-color: #ff5555;
+      color: #fff;
+      padding: 20px 40px;
+      font-size: 1.5em;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    /* Hover effect */
+    .help-button:hover {
+      background-color: #ff3333;
+      transform: scale(1.1);
+    }
+
+    /* Location text */
+    .location-text {
+      color: #fff;
+      margin-top: 20px;
+      font-size: 1em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Video Background -->
+  <video autoplay loop muted playsinline class="video-bg">
+    <source src="video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Dark Overlay -->
+  <div class="overlay"></div>
+
+  <!-- Help Button Container -->
+  <div class="container">
+    <button class="help-button" id="helpButton">Get Disaster Help</button>
+    <div class="location-text" id="locationText">Getting your location...</div>
+  </div>
+
+  <!-- JavaScript to Get User Location and Send to Server -->
+  <script>
+    let latitude, longitude;
+
+    // Function to get user's location
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        document.getElementById("locationText").innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    // Display location and store coordinates
+    function showPosition(position) {
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
+      const locationText = `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
+      document.getElementById("locationText").innerHTML = locationText;
+    }
+
+    // Error handling for location services
+    function showError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          document.getElementById("locationText").innerHTML = "User denied the request for Geolocation.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          document.getElementById("locationText").innerHTML = "Location information is unavailable.";
+          break;
+        case error.TIMEOUT:
+          document.getElementById("locationText").innerHTML = "The request to get user location timed out.";
+          break;
+        case error.UNKNOWN_ERROR:
+          document.getElementById("locationText").innerHTML = "An unknown error occurred.";
+          break;
+      }
+    }
+
+    // Function to send location data to the server
+    function sendLocationToServer() {
+      if (latitude && longitude) {
+        fetch("your-server-endpoint", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            latitude: latitude,
+            longitude: longitude,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert("Location sent successfully!");
+          console.log(data);
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+      } else {
+        alert("Location not available. Please try again.");
+      }
+    }
+
+    // Call the function to get the location when the page loads
+    window.onload = getLocation;
+
+    // Add event listener to the button
+    document.getElementById("helpButton").addEventListener("click", sendLocationToServer);
+  </script>
+
+</body>
+</html>
